@@ -4,7 +4,13 @@ import {
   VolunteerTask, 
   CrowdZone, 
   UserProfile, 
-  AuditLog 
+  AuditLog,
+  SafeRideSession,
+  TrustedContact,
+  ElderProfile,
+  WanderAlert,
+  WitnessReport,
+  TransportHub
 } from '@/types/safety';
 
 export const DEEKSHA_BHOOMI_CENTER = {
@@ -31,6 +37,16 @@ export const MOCK_USERS: UserProfile[] = [
     isVerified: true,
     activeLocation: { lat: 21.1255, lng: 79.0558, landmark: "Central Command Van" },
     createdAt: "2026-09-20T08:00:00Z",
+  },
+  {
+    id: "USR-CITIZEN-01",
+    name: "Snehal Deshpande",
+    phone: "+91 98220 54321",
+    role: "CITIZEN",
+    isVerified: true,
+    activeLocation: { lat: 21.1458, lng: 79.0882, landmark: "Sitabuldi Metro Station" },
+    trustedContacts: ["TC-01", "TC-02", "TC-03"],
+    createdAt: "2026-09-21T05:00:00Z",
   },
   {
     id: "VOL-01",
@@ -88,7 +104,7 @@ export const MOCK_MISSING_CASES: MissingChildCase[] = [
       lng: 79.0562,
       landmark: "North Gate Entrance Gate 1",
     },
-    lastSeenTime: new Date(Date.now() - 25 * 60 * 1000).toISOString(), // 25 mins ago
+    lastSeenTime: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
     reporterId: "CIT-01",
     reporterName: "Sunita Sharma (Mother)",
     reporterPhone: "+91 98901 23456",
@@ -118,12 +134,12 @@ export const MOCK_MISSING_CASES: MissingChildCase[] = [
       lng: 79.0572,
       landmark: "Food Distribution Tent #3",
     },
-    lastSeenTime: new Date(Date.now() - 55 * 60 * 1000).toISOString(), // 55 mins ago
+    lastSeenTime: new Date(Date.now() - 55 * 60 * 1000).toISOString(),
     reporterId: "CIT-02",
     reporterName: "Ganesh Patil (Father)",
     reporterPhone: "+91 98902 34567",
     status: "SEARCHING",
-    severity: "RED", // Escalated due to crowd density
+    severity: "RED",
     otpVerified: true,
     assignedOfficer: "PSI Rekha Bhende",
     searchRadiusMeters: 3000,
@@ -148,7 +164,7 @@ export const MOCK_FOUND_REPORTS: FoundChildReport[] = [
       lng: 79.0568,
       landmark: "East Gate Book Stall, 220m from North Gate",
     },
-    foundTime: new Date(Date.now() - 8 * 60 * 1000).toISOString(), // 8 mins ago
+    foundTime: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
     clothing: {
       top: "Blue graphic t-shirt",
       bottom: "Jeans",
@@ -204,26 +220,6 @@ export const MOCK_VOLUNTEER_TASKS: VolunteerTask[] = [
     assignedAt: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
     expiresAt: new Date(Date.now() + 42 * 60 * 1000).toISOString(),
   },
-  {
-    id: "TSK-02",
-    volunteerId: "VOL-02",
-    volunteerName: "Sneha Wankhede",
-    caseId: "DB-2026-01",
-    childSummary: {
-      name: "Aarav Sharma",
-      age: 6,
-      gender: "Male",
-      clothing: "Blue t-shirt, jeans",
-      photoUrl: "https://images.unsplash.com/photo-1543332164-6e82f355badc?w=400&auto=format&fit=crop&q=80",
-    },
-    searchZoneName: "Sector 2: East Gate Bookstall Vicinity",
-    searchCoordinates: { lat: 21.1258, lng: 79.0567 },
-    status: "ACCEPTED",
-    safetyCheckinCount: 1,
-    lastCheckinTime: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
-    assignedAt: new Date(Date.now() - 16 * 60 * 1000).toISOString(),
-    expiresAt: new Date(Date.now() + 44 * 60 * 1000).toISOString(),
-  },
 ];
 
 export const MOCK_CROWD_ZONES: CrowdZone[] = [
@@ -233,7 +229,7 @@ export const MOCK_CROWD_ZONES: CrowdZone[] = [
     capacity: 5000,
     currentCount: 4350,
     densityPercentage: 87.0,
-    thresholdLevel: "CRITICAL", // Orange threshold (>85%)
+    thresholdLevel: "CRITICAL",
     provenance: "MEASURED",
     coordinates: { lat: 21.1255, lng: 79.0558, landmark: "Stupa Core Dome" },
     recommendation: "Open auxiliary east gates 4A & 4B. Divert volunteer searchers away from core staircase.",
@@ -245,34 +241,10 @@ export const MOCK_CROWD_ZONES: CrowdZone[] = [
     capacity: 3500,
     currentCount: 2625,
     densityPercentage: 75.0,
-    thresholdLevel: "ELEVATED", // Yellow threshold (>70%)
+    thresholdLevel: "ELEVATED",
     provenance: "MEASURED",
     coordinates: { lat: 21.1265, lng: 79.0563, landmark: "Main Archway" },
     recommendation: "Pace security queue at baggage scanners. Inform incoming buses to hold boarding.",
-    lastUpdated: new Date().toISOString(),
-  },
-  {
-    id: "ZONE-03",
-    name: "Food Distribution Pavillion",
-    capacity: 4000,
-    currentCount: 2200,
-    densityPercentage: 55.0,
-    thresholdLevel: "NORMAL",
-    provenance: "MANUAL",
-    coordinates: { lat: 21.1245, lng: 79.0572, landmark: "Langar Ground" },
-    recommendation: "Routine flow. Safe sector for missing child assembly desk.",
-    lastUpdated: new Date().toISOString(),
-  },
-  {
-    id: "ZONE-04",
-    name: "South Parking & Transit Hub",
-    capacity: 6000,
-    currentCount: 3060,
-    densityPercentage: 51.0,
-    thresholdLevel: "NORMAL",
-    provenance: "SIMULATED",
-    coordinates: { lat: 21.1238, lng: 79.0548, landmark: "Ring Road Bus Stop" },
-    recommendation: "Free ingress/egress. Police mobile patrol active.",
     lastUpdated: new Date().toISOString(),
   },
 ];
@@ -289,37 +261,197 @@ export const MOCK_AUDIT_LOGS: AuditLog[] = [
     ipAddress: "192.168.1.42 (Kiosk 1 LAN)",
     details: { childName: "Aarav Sharma", radius: "2000m", otpVerified: true },
   },
+];
+
+// ====================================================================
+// PHASE 2 SEED DATA: NAGPUR CITY-WIDE DAILY SAFETY
+// ====================================================================
+
+export const MOCK_TRUSTED_CONTACTS: TrustedContact[] = [
   {
-    id: "LOG-102",
-    timestamp: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
-    actorId: "SYSTEM_MESH",
-    actorRole: "ADMIN",
-    action: "VOLUNTEERS_DISPATCHED",
-    targetType: "VOLUNTEER",
-    targetId: "VOL-01",
-    ipAddress: "Internal Mesh Router",
-    details: { count: 3, distanceCutoff: "2000m" },
+    id: "TC-01",
+    userId: "USR-CITIZEN-01",
+    name: "Sunita Deshpande (Mother)",
+    phone: "+91 98220 11111",
+    relationship: "FAMILY",
+    isVerified: true,
+    priorityOrder: 1,
+    receiveSmsOnYellow: true,
+    receiveSmsOnOrange: true,
   },
   {
-    id: "LOG-103",
-    timestamp: new Date(Date.now() - 7 * 60 * 1000).toISOString(),
-    actorId: "CITIZEN_ANON",
-    actorRole: "CITIZEN",
-    action: "FOUND_CHILD_DOUBT_REPORTED",
-    targetType: "FOUND_REPORT",
-    targetId: "FND-2026-04",
-    ipAddress: "103.21.125.88 (Mobile Cellular)",
-    details: { location: "East Gate Book Stall", reportType: "DOUBT_REPORT" },
+    id: "TC-02",
+    userId: "USR-CITIZEN-01",
+    name: "Rohit Deshpande (Brother)",
+    phone: "+91 98220 22222",
+    relationship: "FAMILY",
+    isVerified: true,
+    priorityOrder: 2,
+    receiveSmsOnYellow: false,
+    receiveSmsOnOrange: true,
   },
   {
-    id: "LOG-104",
-    timestamp: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
-    actorId: "MATCHING_ENGINE",
-    actorRole: "ADMIN",
-    action: "MATCH_CANDIDATE_GENERATED",
-    targetType: "MATCH",
-    targetId: "MATCH-DB-2026-01-FND-2026-04",
-    ipAddress: "Compute Core",
-    details: { compositeScore: 0.895, autoPinned: true },
+    id: "TC-03",
+    userId: "USR-CITIZEN-01",
+    name: "Pooja Kulkarni (Flatmate)",
+    phone: "+91 98220 33333",
+    relationship: "FRIEND",
+    isVerified: true,
+    priorityOrder: 3,
+    receiveSmsOnYellow: false,
+    receiveSmsOnOrange: true,
+  },
+];
+
+// Active SafeRide Route: Sitabuldi Metro -> VNIT Campus (via Amravati Road)
+export const MOCK_SAFERIDE_ROUTE = [
+  { lat: 21.1458, lng: 79.0882, order: 0, landmark: "Sitabuldi Metro Station" },
+  { lat: 21.1440, lng: 79.0780, order: 1, landmark: "Variety Square / Panchsheel Talkies" },
+  { lat: 21.1415, lng: 79.0650, order: 2, landmark: "Jhansi Rani Square" },
+  { lat: 21.1370, lng: 79.0540, order: 3, landmark: "Alankar Square / Dharampeth" },
+  { lat: 21.1290, lng: 79.0520, order: 4, landmark: "Laxmi Nagar Square" },
+  { lat: 21.1235, lng: 79.0515, order: 5, landmark: "VNIT Campus Main Gate" },
+];
+
+export const MOCK_ACTIVE_SAFERIDE: SafeRideSession = {
+  id: "SR-2026-089",
+  userId: "USR-CITIZEN-01",
+  userName: "Snehal Deshpande",
+  userPhone: "+91 98220 54321",
+  startLocation: { lat: 21.1458, lng: 79.0882, landmark: "Sitabuldi Metro Interchange" },
+  destination: { lat: 21.1235, lng: 79.0515, landmark: "VNIT Campus Main Gate, South Ambazari Rd" },
+  currentLocation: { lat: 21.1415, lng: 79.0650, landmark: "Jhansi Rani Square" },
+  expectedRoute: MOCK_SAFERIDE_ROUTE,
+  vehicleDetails: {
+    vehicleNumber: "MH-31-FA-4290",
+    vehicleType: "AUTO_RICKSHAW",
+    driverName: "Santosh Mankar",
+    driverPhone: "+91 98500 78901",
+    rideServiceProvider: "Nagpur Prepaid Auto",
+  },
+  status: "ACTIVE",
+  safetyState: "GREEN",
+  deviationMeters: 45,
+  stationarySeconds: 15,
+  duressTriggered: false,
+  startedAt: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
+  lastPingAt: new Date().toISOString(),
+};
+
+export const MOCK_ELDER_PROFILES: ElderProfile[] = [
+  {
+    id: "ELD-2026-01",
+    guardianId: "USR-CITIZEN-01",
+    guardianName: "Snehal Deshpande",
+    guardianPhone: "+91 98220 54321",
+    name: "Prabhakar Rao Deshpande (Grandfather)",
+    age: 78,
+    gender: "MALE",
+    photoUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80",
+    conditionNotes: "Mild Alzheimer's/memory disorientation. Speaks Marathi and Hindi. Wears spectacles.",
+    safeZones: [
+      {
+        id: "SZ-01",
+        name: "Ramdaspeth Residence",
+        center: { lat: 21.1350, lng: 79.0750, landmark: "Canal Road, Ramdaspeth" },
+        radiusMeters: 400,
+        zoneType: "HOME",
+      },
+      {
+        id: "SZ-02",
+        name: "Senior Citizens Community Park",
+        center: { lat: 21.1375, lng: 79.0720, landmark: "Shivaji Nagar Garden" },
+        radiusMeters: 300,
+        zoneType: "COMMUNITY",
+      },
+    ],
+    lastKnownLocation: { lat: 21.1410, lng: 79.0710, landmark: "Shankar Nagar Square (Outside Zone)" },
+    currentStatus: "WANDERING_DETECTED",
+    qrTokenId: "MEHFUS-SECURE-QR-98214A",
+    lastCheckinTime: new Date(Date.now() - 14 * 60 * 1000).toISOString(),
+  },
+];
+
+export const MOCK_WANDER_ALERTS: WanderAlert[] = [
+  {
+    id: "WND-2026-03",
+    elderId: "ELD-2026-01",
+    elderName: "Prabhakar Rao Deshpande",
+    guardianPhone: "+91 98220 54321",
+    triggerZoneName: "Ramdaspeth Residence (400m Zone)",
+    distanceOutsideMeters: 620,
+    currentLocation: { lat: 21.1410, lng: 79.0710, landmark: "Shankar Nagar Square, Dharampeth" },
+    severity: "ORANGE",
+    status: "ACTIVE_SEARCH",
+    assignedRespondersCount: 3,
+    triggeredAt: new Date(Date.now() - 18 * 60 * 1000).toISOString(),
+  },
+];
+
+export const MOCK_WITNESS_REPORTS: WitnessReport[] = [
+  {
+    id: "WIT-2026-021",
+    trackingCode: "WR-9482-D",
+    anonymityLevel: "ANONYMOUS",
+    category: "HARASSMENT",
+    description: "Two men on a black motorcycle without license plates making threatening remarks to female students near the college bus stand.",
+    location: { lat: 21.1420, lng: 79.0620, landmark: "LAD College Bus Stand, Shankar Nagar" },
+    incidentTime: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+    mediaUrls: ["https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=400&auto=format&fit=crop&q=80"],
+    exifScrubbed: true,
+    status: "VERIFIED",
+    assignedAuthority: "Ambazari Police Station Patrol Car #4",
+    createdAt: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+  },
+  {
+    id: "WIT-2026-022",
+    trackingCode: "WR-1038-S",
+    anonymityLevel: "CONFIDENTIAL",
+    reporterName: "Rajiv Khare",
+    reporterPhone: "+91 98234 56789",
+    category: "CHAIN_SNATCHING",
+    description: "Attempted chain snatching thwarted by auto driver. Suspects fled towards Gokulpeth market.",
+    location: { lat: 21.1390, lng: 79.0580, landmark: "West High Court Road, Dharampeth" },
+    incidentTime: new Date(Date.now() - 85 * 60 * 1000).toISOString(),
+    mediaUrls: [],
+    exifScrubbed: true,
+    status: "UNDER_REVIEW",
+    createdAt: new Date(Date.now() - 80 * 60 * 1000).toISOString(),
+  },
+];
+
+export const MOCK_TRANSPORT_HUBS: TransportHub[] = [
+  {
+    id: "HUB-01",
+    name: "Sitabuldi Metro Interchange",
+    type: "METRO",
+    coordinates: { lat: 21.1458, lng: 79.0882, landmark: "Zero Mile / Sitabuldi Junction" },
+    operatorName: "Maha Metro Nagpur",
+    policeBoothPhone: "+91 712 2560100",
+    activeIncidentsCount: 1,
+    lastBroadcastNotice: "SafeRide Departure Hub active. Security kiosk assistance on Platform 2.",
+    status: "NORMAL",
+  },
+  {
+    id: "HUB-02",
+    name: "Nagpur Central Railway Station",
+    type: "RAILWAY",
+    coordinates: { lat: 21.1525, lng: 79.0875, landmark: "Platform 1 RPF Post" },
+    operatorName: "Central Railway (Nagpur Division)",
+    policeBoothPhone: "+91 712 2564344",
+    activeIncidentsCount: 0,
+    lastBroadcastNotice: "Elderly Wander Assist & Child Reunification Desk Operational at West Gate.",
+    status: "NORMAL",
+  },
+  {
+    id: "HUB-03",
+    name: "Mor Bhavan City Bus Terminus",
+    type: "BUS_TERMINUS",
+    coordinates: { lat: 21.1440, lng: 79.0760, landmark: "MSRTC City Depot" },
+    operatorName: "Nagpur Mahanagar Parivahan (Aapli Bus)",
+    policeBoothPhone: "+91 712 2541233",
+    activeIncidentsCount: 0,
+    lastBroadcastNotice: "Women Safety Guardian Desk active at Bay 4.",
+    status: "NORMAL",
   },
 ];

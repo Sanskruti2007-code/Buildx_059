@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { SafetyStoreProvider } from '@/lib/store/safety-store';
 import { Header } from '@/components/common/header';
+import { NetworkStatusBanner } from '@/components/common/network-status-banner';
 
 export const metadata: Metadata = {
-  title: 'MEHFUS | Deeksha Bhoomi Safety Network',
-  description: 'Integrated Citizen-Authority Safety Network for Emergency Child Response, Volunteer Mesh, and Crowd Management at Deeksha Bhoomi.',
+  title: 'MEHFUS | Municipal Citizen & Authority Safety Infrastructure',
+  description: 'Production-ready proactive safety platform for child recovery, women safety, responder dispatch, and predictive municipal risk intelligence.',
 };
 
 export default function RootLayout({
@@ -19,6 +20,7 @@ export default function RootLayout({
         <SafetyStoreProvider>
           <div className="relative min-h-screen flex flex-col">
             <Header />
+            <NetworkStatusBanner />
             <main className="flex-1">
               {children}
             </main>

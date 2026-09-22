@@ -6,16 +6,19 @@ import {
   FoundChildReport, 
   VolunteerTask, 
   CrowdZone, 
-  Coordinates 
+  Coordinates,
+  PrivacyHeatmapCell 
 } from '@/types/safety';
 import { DEEKSHA_BHOOMI_CENTER } from '@/lib/mock/seed-data';
-import { Shield, Users, AlertCircle, HelpCircle, Layers, ZoomIn, ZoomOut } from 'lucide-react';
+import { Shield, Users, AlertCircle, HelpCircle, Layers, ZoomIn, ZoomOut, Flame } from 'lucide-react';
 
 interface IncidentMapProps {
   missingCases?: MissingChildCase[];
   foundReports?: FoundChildReport[];
   volunteerTasks?: VolunteerTask[];
   crowdZones?: CrowdZone[];
+  privacyHeatmapCells?: PrivacyHeatmapCell[];
+  showPrivacyHeatmap?: boolean;
   selectedCaseId?: string;
   onSelectCase?: (caseId: string) => void;
   heightClass?: string;
@@ -26,6 +29,8 @@ export function IncidentMap({
   foundReports = [],
   volunteerTasks = [],
   crowdZones = [],
+  privacyHeatmapCells = [],
+  showPrivacyHeatmap = false,
   selectedCaseId,
   onSelectCase,
   heightClass = "h-[500px] lg:h-[620px]"
@@ -224,6 +229,39 @@ export function IncidentMap({
           `);
         });
       }
+      // 5. Plot Privacy-Preserving Risk Heatmap (k >= 3 suppression enforced)
+      if (showPrivacyHeatmap && privacyHeatmapCells.length > 0) {
+        privacyHeatmapCells.forEach((cell) => {
+          if (!cell.isSuppressed) {
+            const color = cell.intensity > 0.7 ? '#ef4444' : cell.intensity > 0.4 ? '#f97316' : '#eab308';
+            const rect = L.rectangle(
+              [
+                [cell.bounds.south, cell.bounds.west],
+                [cell.bounds.north, cell.bounds.east]
+              ],
+              {
+                color,
+                weight: 1.5,
+                fillColor: color,
+                fillOpacity: Math.min(0.45, Math.max(0.18, cell.intensity * 0.45)),
+                dashArray: cell.intensity < 0.5 ? '4, 4' : undefined
+              }
+            ).addTo(map);
+
+            rect.bindPopup(`
+              <div class="text-xs p-1">
+                <div class="font-black text-amber-400 flex items-center gap-1">
+                  <span>🔒 PRIVACY-PRESERVED CELL</span>
+                </div>
+                <div class="text-[11px] text-slate-200 mt-1">Cell ID: <code>${cell.cellId}</code></div>
+                <div class="text-[10px] text-emerald-400 mt-0.5">k-Anonymity Verified (Count: ${cell.incidentCount} &ge; 3)</div>
+                <div class="text-[10px] text-slate-300 mt-1">Relative Risk Intensity: <strong>${(cell.intensity * 100).toFixed(0)}%</strong></div>
+                <div class="text-[9px] text-slate-400 mt-1 italic">Individual coordinates mathematically suppressed per DPDP Act 2023.</div>
+              </div>
+            `);
+          }
+        });
+      }
     }
 
     initLeafletMap();
@@ -235,7 +273,7 @@ export function IncidentMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [missingCases, foundReports, volunteerTasks, crowdZones, activeFilter]);
+  }, [missingCases, foundReports, volunteerTasks, crowdZones, privacyHeatmapCells, showPrivacyHeatmap, activeFilter]);
 
   const handleZoomIn = () => mapInstanceRef.current?.zoomIn();
   const handleZoomOut = () => mapInstanceRef.current?.zoomOut();
