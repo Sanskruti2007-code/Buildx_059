@@ -1,11 +1,10 @@
 # Buildx_059
-# 🛡️ SurakshaSetu
-
+# 🛡️ Mehfus
 ### Integrated Citizen–Authority Safety & Security Platform
 
 > **One platform. One network. Faster response. Safer communities.**
 
-SurakshaSetu is a real-time **citizen–authority coordination platform** designed to improve emergency response, missing-person assistance, women safety, crowd management, and incident reporting.
+Mehfus is a real-time **citizen–authority coordination platform** designed to improve emergency response, missing-person assistance, women safety, crowd management, and incident reporting.
 
 Its core engine, **Guardian Mesh**, connects citizens with trusted contacts, volunteers, police help desks, patrol officers, transport hubs, and control-room operators through a unified alert and response network.
 
