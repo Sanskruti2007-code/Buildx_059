@@ -1,0 +1,82 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() { return request.auth != null; }
+    function role() { return request.auth.token.role; }
+    function isOwner(uid) { return request.auth.uid == uid; }
+    function isPolice() { return role() == 'police'; }
+    function isControl() { return role() == 'control_room'; }
+    function isVolunteer() { return role() == 'volunteer'; }
+    function isAdmin() { return role() == 'admin'; }
+
+    match /users/{userId} {
+      allow read: if isAuth() && isOwner(userId);
+      allow update: if isAuth() && isOwner(userId)
+        && !request.resource.data.diff(resource.data)
+           .affectedKeys().hasAny(['role']);
+      allow create: if isAuth();
+      allow delete: if isAuth() && isAdmin();
+    }
+
+    match /alerts/{alertId} {
+      allow read: if isAuth() && (
+        resource.data.userId == request.auth.uid ||
+        isPolice() || isControl() ||
+        (isVolunteer() && resource.data.status == 'active')
+      );
+      allow create: if isAuth()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuth() && (isPolice() || isControl());
+      allow delete: if false;
+    }
+
+    match /missing_cases/{caseId} {
+      allow read: if isAuth() && (
+        resource.data.reporterId == request.auth.uid ||
+        isPolice() || isControl() ||
+        (isVolunteer() && resource.data.status == 'active')
+      );
+      allow create: if isAuth()
+        && request.resource.data.reporterId == request.auth.uid;
+      allow update: if isAuth() && (isPolice() || isControl());
+      allow delete: if false;
+    }
+
+    match /found_reports/{reportId} {
+      allow read: if isAuth() && (
+        resource.data.finderId == request.auth.uid ||
+        isPolice() || isControl()
+      );
+      allow create: if isAuth();
+      allow update: if isAuth() && (isPolice() || isControl());
+      allow delete: if false;
+    }
+
+    match /crowd_zones/{zoneId} {
+      allow read: if isAuth();
+      allow write: if isAuth() && isControl();
+    }
+
+    match /volunteer_tasks/{taskId} {
+      allow read: if isAuth() && (
+        resource.data.volunteerId == request.auth.uid ||
+        isPolice() || isControl()
+      );
+      allow create: if isAuth() && (isControl() || isPolice());
+      allow update: if isAuth() && (
+        (isVolunteer() && resource.data.volunteerId == request.auth.uid) ||
+        isControl() || isPolice()
+      );
+      allow delete: if false;
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isAuth() && (isAdmin() || isControl());
+      allow create: if isAuth();
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
